@@ -9,10 +9,37 @@ import csv
 
 
 def is_invalid_check(id):
-    return True
+    """Checks for invalid repeating product ids"""
+    str_id = str(id)
+    id_len = len(str_id)
+
+    # Calculate the middle index differently for 2 len
+    if id_len == 2:
+        # Example 1|1 -> first:1, back:1
+        # Grab the first half of the product number
+        first_half = str_id[0]
+        # Grab the back half of the product number
+        back_half = str_id[1]
+    elif id_len % 2:
+        # Ignore un-even product ids as they can never repeat
+        return False
+    else:
+        # Find the middle index and offset by 1
+        # Example 11885|11885 -> int(10/2) == 4
+        middle_index = int(id_len / 2)
+        # Grab the first half of the product number
+        first_half = str_id[:middle_index]
+        # Grab the back half of the product number
+        back_half = str_id[middle_index:]
+
+    # Example 3859|3859 -> first:3859, back:3859
+    if first_half == back_half:
+        return True
+    else:
+        return False
 
 
-with open("example-input.csv") as csv_file:
+with open("input.csv") as csv_file:
     # Open the csv file with the builtin lang reader
     input_reader = csv.reader(csv_file, delimiter=",")
 
