@@ -1,4 +1,4 @@
-### Common commands
+# Common commands
 
 Use uv to consume the proper python version plus deps.
 `uv run day-1.py`
