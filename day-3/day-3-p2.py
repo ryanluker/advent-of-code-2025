@@ -1,50 +1,40 @@
-# Look at each joltage battery bank and find the 2 largest values, in order
+# Look at each joltage battery bank and find the 12 largest values, in order
 # Tactics:
-# Search over each bank and keep track of the highest numbers
+#   - Look for the biggest value that is not near the end (must be min, 12 away)
+#   - Always prefer the bigger numbers near the front
+#   - After finding the first number, create a subset to find the remaining values
+#   - Might be a good scenario for a recursive design
 
 from fileinput import FileInput
 
-with FileInput("input.txt") as input:
+
+def find_the_next_highest_value(current_subset):
+    current_highest = 0
+    for item in current_subset:
+        int_item = int(item)
+        if current_highest < int_item:
+            # New highest item
+            current_highest = int_item
+        # Current highest still biggest
+    return current_highest
+
+with FileInput("example-input.txt") as input:
     total_joltage_amount = 0
     for joltage_bank in input:
         joltage_bank = joltage_bank.strip("\n")
         if not joltage_bank:
             # We have hit the bottom of the joltage numbers
             continue
-
-        # Turn the joltage from a single string of ints to list
-        list_joltage_bank = list(joltage_bank)
-
-        # Sort the joltage bank from highest to lowest
-        sort_joltage_bank = sorted(list_joltage_bank, reverse=True)
-
-        # Find the highest value that isn't in the last position
-        max_joltage = None
-        highest_value = sort_joltage_bank[0]
-        highest_value_pos = list_joltage_bank.index(highest_value)
-        if highest_value_pos == len(list_joltage_bank) - 1:
-            # Highest value is in last position, used 2nd highest
-            second_highest_value = sort_joltage_bank[1]
-            second_highest_pos = list_joltage_bank.index(second_highest_value)
-            max_joltage = str(second_highest_value) + str(highest_value)
-            print(joltage_bank, max_joltage, highest_value_pos, second_highest_pos)
-        else:
-            # Highest value found, iterate until highest found in remainder
-            # NOTE: exclude the current highest value from the remainder
-            remaining_joltage_bank = list_joltage_bank[highest_value_pos + 1 :]
-            sort_remaining = sorted(remaining_joltage_bank, reverse=True)
-            # We simply want the highest remaining value as we care not about position
-            highest_in_remaining = sort_remaining[0]
-            max_joltage = str(highest_value) + str(highest_in_remaining)
-            print(
-                joltage_bank,
-                max_joltage,
-                highest_value_pos,
-                remaining_joltage_bank.index(highest_in_remaining),
-            )
-
-        # Max joltage found for current bank
-        total_joltage_amount = total_joltage_amount + int(max_joltage)
-
-    # Final max joltage across all banks
-    print(total_joltage_amount)
+        # Creates a pre-allocated list 12 items long
+        pre_fab_joltage_bank = [None] * 12
+        current_joltage_bank = list(joltage_bank)
+        for turn in range(0, len(pre_fab_joltage_bank)):
+            # Find the highest outstanding value
+            high_value = find_the_next_highest_value(current_joltage_bank)
+            try:
+                index_high = current_joltage_bank.index(str(high_value))
+            except:
+                print(f"------High value too close to end------")
+            pre_fab_joltage_bank[turn] = high_value
+            current_joltage_bank = current_joltage_bank[index_high+1:]
+        print(f"Finished generating joltage {joltage_bank} - {pre_fab_joltage_bank}")
