@@ -3,7 +3,7 @@
 from fileinput import FileInput
 
 
-with FileInput("example-input.txt") as input:
+with FileInput("input.txt") as input:
     total_joltage_amount = 0
     for joltage_bank in input:
         joltage_bank = joltage_bank.strip("\n")
