@@ -138,7 +138,7 @@ def calculate_heatmap(warehouse):
                 count = count + 1
     return heatmap_warehouse, count
 
-with FileInput("example-input.txt") as input:
+with FileInput("input.txt") as input:
     warehouse = generate_warehouse_map(input)
     render_warehouse(warehouse)
     print("-------------------------------------")
