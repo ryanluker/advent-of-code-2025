@@ -13,7 +13,7 @@
 from fileinput import FileInput
 
 
-with FileInput("example-input.txt") as input:
+with FileInput("input.txt") as input:
     fresh_database = []
     # Construct the fresh ranges
     for fresh_range in input:
@@ -57,16 +57,22 @@ with FileInput("example-input.txt") as input:
             if index + 1 == len(fresh_database):
                 fresh_database.append(fresh_row_range)
 
+    # Print the fresh_database before de-duplication
+    for fresh_range in fresh_database:
+        print(fresh_range)
+    print("--------------------------")
+
     # Remove and adjust any ranges with overlaps
     for index, fresh_range in enumerate(fresh_database):
         if index + 1 == len(fresh_database):
             # We are at the end and can quit
-            break
+            continue
 
         next_fresh_range = fresh_database[index + 1]
-        if fresh_range.end >= next_fresh_range.start:
+        if fresh_range.stop >= next_fresh_range.start:
+            # We gave removed the current range in order to deduplicate the next
             fresh_database.pop(index)
-            fresh_database[index + 1] = range(fresh_range.start, next_fresh_range.end)
+            fresh_database[index] = range(fresh_range.start, next_fresh_range.stop)
 
     # Perform the final count
     fresh_count = 0
