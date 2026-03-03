@@ -35,9 +35,12 @@ def construct_worksheet(file_input):
 
 def calculate_totals(worksheet):
     totals = 0
+    
     # Store the operation row for later use
     ops_row = len(worksheet) - 1
-    for col, _ in enumerate(worksheet):
+
+    # Use the first row to figure out the number of columns
+    for col, _ in enumerate(worksheet[0]):
         col_total = 0
         
         # Find the total for the column by apply operation
@@ -53,16 +56,18 @@ def calculate_totals(worksheet):
             current_row = current_row - 1
             col_numbers.append(worksheet[current_row][col])
 
+        print(operation, col_numbers)
         # Note: These arithmetic operations can be in any order
         if operation == "*":
             col_total = math.prod(col_numbers)
         elif operation == "+":
             col_total = math.fsum(col_numbers)
+        print(col_total)
         totals = totals + col_total
     return int(totals)
 
 
-with FileInput("example-input.txt") as input:
+with FileInput("input.txt") as input:
     worksheet = construct_worksheet(input)   
     print(worksheet)
     totals = calculate_totals(worksheet)
