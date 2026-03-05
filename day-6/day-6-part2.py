@@ -57,16 +57,19 @@ def calculate_totals(worksheet):
             # We have reached the top if we are less than 0
             if current_row == 0:
                 break
-            current_row = current_row - 1
+            current_row = current_row - 1    
+            current_str_number = worksheet[current_row][col]
+            col_numbers.append(current_str_number)
+        
+        # Using the "new" math, read the numbers right to left up and down
+        # EG: 42
+        #     23
+        #     111
+        # Will become [1, 231, 421]
+        rl_col_numbers = ["","",""]
+        # TODO
+        
 
-            # Using the "new" math, read the numbers right to left up and down
-            # EG: 42
-            #     23
-            #     111
-            # Will become [1, 231, 421]
-            # TODO
-
-        print(operation, col_numbers)
         # Note: These arithmetic operations can be in any order
         if operation == "*":
             col_total = math.prod(col_numbers)
