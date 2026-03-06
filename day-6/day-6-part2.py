@@ -10,31 +10,51 @@ import math
 from fileinput import FileInput
 
 MATH_OPS = ["*", "+"]
+EMPTY_COLUMNS = ["    ", "\n\n\n\n"]
 
 
 def construct_worksheet(file_input):
     worksheet = []
-    for row_index, line in enumerate(input):
-        worksheet.append([])
-        # Extract just the numbers from the current line
-        math_items = line.split()
-        
+    for line in input:
         # Extra protection if we miss the operation row somehow
-        if math_items == []:
+        if line == "\n":
             # Last row in the file, exit early
             break
-        
-        # If we are on the arthimetic operations row, don't int-ify
-        if math_items[0] in MATH_OPS:
-            for operation in math_items:
-                worksheet[row_index].append(operation)
-            break
-
-        for number in math_items:
-            # Append the string number as we will exact the columns later
-            worksheet[row_index].append(number)
+        # Given we need the exact spaces between numbers for part 2
+        # we keep the line as is (str) and use index fetching instead.
+        worksheet.append(line)
     
-    return worksheet
+    rl_worksheet = []
+    column_container = []
+    for col, _ in enumerate(worksheet[-1]):
+        # Extract the operation if we are at the start of a new set
+        # and also reset the column_container
+        operations = worksheet[-1]
+        if operations[col] in MATH_OPS:
+            column_container = []
+            column_container.append(operations[col])
+        
+        # Using the "new" math, read the numbers right to left up and down
+        # EG: -79-338-
+        #     -84-921-
+        #     562-5154
+        #     814-6586
+        #     *---+---
+        # Will become [58,7861,9424,*] and [3956,3215,8158,46,+]
+        rl_number = ""
+        # Iterate from the bottom up
+        worksheet_range = len(worksheet) + 1
+        for row in range(-2, -(worksheet_range), -1):
+            rl_number = worksheet[row][col] + rl_number
+        
+        if rl_number in EMPTY_COLUMNS:
+            # We have hit the empty column, we can now append the container and move on
+            rl_worksheet.append(column_container)
+        else:
+            # If we have a number, add it to the container
+            column_container.append(int(rl_number))
+    
+    return worksheet, rl_worksheet
 
 
 def calculate_totals(worksheet):
@@ -42,46 +62,27 @@ def calculate_totals(worksheet):
     
     # Store the operation row for later use
     ops_row = len(worksheet) - 1
+    
+    # Store the numbers and operations as we go
+    col_numbers = []
 
-    # Use the first row to figure out the number of columns
-    for col, _ in enumerate(worksheet[0]):
-        col_total = 0
-        
-        # Find the total for the column by apply operation
-        operation = worksheet[ops_row][col]
-        current_row = ops_row
-        col_numbers = []
-
-        # Find all the numbers for the current column
-        while True:
-            # We have reached the top if we are less than 0
-            if current_row == 0:
-                break
-            current_row = current_row - 1    
-            current_str_number = worksheet[current_row][col]
-            col_numbers.append(current_str_number)
-        
-        # Using the "new" math, read the numbers right to left up and down
-        # EG: 42
-        #     23
-        #     111
-        # Will become [1, 231, 421]
-        rl_col_numbers = ["","",""]
-        # TODO
-        
-
+    # Use the first row to figure out the number of characters in the string
+    for ops_set in worksheet:
+        operation = ops_set.pop(0)
         # Note: These arithmetic operations can be in any order
+        col_total = 0
         if operation == "*":
-            col_total = math.prod(col_numbers)
+            col_total = math.prod(ops_set)
         elif operation == "+":
-            col_total = math.fsum(col_numbers)
-        print(col_total)
+            col_total = math.fsum(ops_set)
         totals = totals + col_total
     return int(totals)
 
 
-with FileInput("example-input.txt") as input:
-    worksheet = construct_worksheet(input)   
+with FileInput("input.txt") as input:
+    worksheet, rl_worksheet = construct_worksheet(input)   
     print(worksheet)
-    totals = calculate_totals(worksheet)
+    print("--------------------------------")
+    print(rl_worksheet)
+    totals = calculate_totals(rl_worksheet)
     print(totals)
