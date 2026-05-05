@@ -29,26 +29,33 @@ def construct_beam_array(file_input):
 
             # By default, append the character to the beam layout.
             beam_layout[row].append(char)
-
+            
+            # Store the value above the current box for later reference.
+            above_box_value = beam_layout[row - 1][column]
+            
             # Check for the beam splitter character "^" and add a beam to each side
             current_box_value = beam_layout[row][column]
-            if current_box_value == "^":
+            if current_box_value == "^" and above_box_value == "|":
                 beam_layout[row][column - 1] = "|"
+                # Keep track of the beam splitting
+                totals = totals + 1
                 continue
+
             # If the previous box is a beam splitter, we need to adjust the current box value.
-            if beam_layout[row][column - 1] == "^":
+            neg_one_above_box_value = beam_layout[row - 1][column - 1]
+            if beam_layout[row][column - 1] == "^" and neg_one_above_box_value:
                 beam_layout[row][column] = "|"
                 continue
 
-            # Store the value above the current box for later reference.
-            above_box_value = beam_layout[row - 1][column]
+            
             # Check the above character is a line and if so, add a beam.
             if above_box_value == "|" and current_box_value == ".":
-                beam_layout[row][column - 1] = "|"
+                beam_layout[row][column] = "|"
                 continue
+
             # Check for the starting charcater "S" above the current spot.
             elif above_box_value == "S" and current_box_value == ".":
-                beam_layout[row][column - 1] = "|"
+                beam_layout[row][column] = "|"
                 continue
 
     return beam_layout, totals
@@ -60,7 +67,7 @@ def print_layout(beam_layout):
         print("".join(line))
 
 
-with FileInput("example-input.txt") as file_input:
+with FileInput("input.txt") as file_input:
     beam_layout, totals = construct_beam_array(file_input)
     print_layout(beam_layout)
     print(totals)
