@@ -6,46 +6,44 @@
 # - Print each manifold state once reached the bottom
 # - Recursively traverse the beam splitter tree
 
+from functools import cache
 from time import sleep
 from fileinput import FileInput
 
-beam_count = 0
-
 
 def traverse_beam_array(current_state_beam_array, row, column):
-    # We have reached the bottom of the manifold for the current beam
+    # Reached the bottom of the beam path, bubble up a value of 1
     if len(current_state_beam_array) == row + 2:
-        # Keep track of beam exits
-        global beam_count
-        beam_count += 1
-        return
+        return 1
+    
+    current_value = current_state_beam_array[row][column]
+    current_below_value = current_state_beam_array[row + 1][column]
 
-    current_array_value = current_state_beam_array[row][column]
-    below_current_value = current_state_beam_array[row + 1][column]
-    below_current_left_value = current_state_beam_array[row + 1][column - 1]
-
-    # We are at S kickoff the single beam
-    if current_array_value == "S" and below_current_value == ".":
+    # Nothing below (or at start), continue beam traversal
+    if (current_value == "|" or current_value == "S") and current_below_value == ".":
         current_state_beam_array[row + 1][column] = "|"
-        traverse_beam_array(current_state_beam_array, row + 1, column)
-
-    # Continue the beam traversal
-    if current_array_value == "|" and below_current_value == ".":
-        current_state_beam_array[row + 1][column] = "|"
-        traverse_beam_array(current_state_beam_array, row + 1, column)
-        # Remove the beam as we pop back up the func call stack
+        unique_beam_count = traverse_beam_array(current_state_beam_array, row + 1, column)
+        # Return up the stack with the accumulated beam count
         current_state_beam_array[row + 1][column] = "."
+        return unique_beam_count
 
-    # We reached a splitter, create two new traversals left first (DFS)
-    if current_array_value == "|" and below_current_value == "^":
+    # Splitter below, split the beam
+    if current_value == "|" and current_below_value == "^":
         current_state_beam_array[row + 1][column - 1] = "|"
-        traverse_beam_array(current_state_beam_array, row + 1, column - 1)
-        # Remove the previous path as we have already went that way
+        unique_beam_count_left = traverse_beam_array(current_state_beam_array, row + 1, column - 1)
+        # Unset the beam as we are heading back up the call stack
         current_state_beam_array[row + 1][column - 1] = "."
-
         current_state_beam_array[row + 1][column + 1] = "|"
-        traverse_beam_array(current_state_beam_array, row + 1, column + 1)
+        unique_beam_count_right = traverse_beam_array(current_state_beam_array, row + 1, column + 1)
+        # Unset the beam as we are heading back up the call stack
         current_state_beam_array[row + 1][column + 1] = "."
+        unique_beam_count = unique_beam_count_left + unique_beam_count_right
+        current_state_beam_array[row + 1][column] = unique_beam_count
+        return unique_beam_count
+
+    # Found a cached subgraph, increment and return
+    if current_value == "|" and type(current_below_value) == int:
+        return current_below_value
 
 
 def load_manifold(file_input):
@@ -66,10 +64,15 @@ def load_manifold(file_input):
 def print_manifold_state(manifold_layout):
     """Pretty prints the manifold layout for human visualization."""
     for line in manifold_layout:
-        print("".join(line))
+        fmt_line = [
+            str(value)
+            for value in line
+        ]
+        print("".join(fmt_line))
 
 
 with FileInput("input.txt") as file_input:
     starting_manifold, starting_column = load_manifold(file_input)
-    traverse_beam_array(starting_manifold, 0, starting_column)
-    print(beam_count)
+    final_count = traverse_beam_array(starting_manifold, 0, starting_column)
+    print_manifold_state(starting_manifold)
+    print(final_count)
