@@ -20,7 +20,7 @@ def main():
 
     debug_mode = safe_argv_fetch("debug_mode", False)
 
-    day_module = import_module(f"{day}.{day}").run(input_filepath, debug_mode)
+    day_module = import_module(f"{day}.{day}").run(input_filepath, run_mode, debug_mode)
     # Most day modules auto run and do not require func calling
 
 
