@@ -18,9 +18,12 @@ def main():
     else:
         raise Exception("Incorrect run_mode!")
 
+    # Part 1 or Part 2
+    part = safe_argv_fetch("part_mode", "part1")
+
     debug_mode = safe_argv_fetch("debug_mode", False)
 
-    day_module = import_module(f"{day}.{day}").run(input_filepath, run_mode, debug_mode)
+    day_module = import_module(f"{day}.{day}-{part}").run(input_filepath, run_mode, debug_mode)
     # Most day modules auto run and do not require func calling
 
 
